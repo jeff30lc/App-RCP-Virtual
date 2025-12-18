@@ -1,21 +1,19 @@
+
 {
-  "name": "lifesaver-pro---simulador-de-rcp",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "name": "lifesaver-pro-node",
+  "version": "1.0.0",
+  "description": "Simulador de RCP profissional com feedback de IA",
+  "main": "server.js",
   "dependencies": {
+    "express": "^4.18.2",
+    "@google/genai": "^0.21.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
-  "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
-  }
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "Senior Frontend Engineer",
+  "license": "MIT"
 }

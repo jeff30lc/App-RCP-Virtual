@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GameStats } from '../types';
+import { GoogleGenAI } from "@google/genai";
 
 interface ResultProps {
   stats: GameStats;
@@ -10,6 +11,8 @@ interface ResultProps {
 const Result: React.FC<ResultProps> = ({ stats, onReset }) => {
   const isApproved = stats.accuracy >= 70;
   const [showAngel, setShowAngel] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string>("");
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
 
   useEffect(() => {
     if (!isApproved) {
@@ -17,6 +20,33 @@ const Result: React.FC<ResultProps> = ({ stats, onReset }) => {
       return () => clearTimeout(timer);
     }
   }, [isApproved]);
+
+  useEffect(() => {
+    const fetchAiFeedback = async () => {
+      setIsLoadingAi(true);
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const prompt = `Aja como um instrutor de medicina de emergência. O aluno realizou um treinamento de RCP. 
+        Resultados: Precisão: ${Math.round(stats.accuracy)}%, Total de Compressões: ${stats.totalCompressions}, 
+        Compressões no Ritmo: ${stats.correctCompressions}, BPM Médio: ${stats.averageBpm}. 
+        Dê um feedback curto (máximo 3 frases) e motivador em Português sobre este desempenho específico.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: prompt,
+        });
+
+        setAiFeedback(response.text || "Continue praticando para salvar vidas!");
+      } catch (error) {
+        console.error("Erro ao obter feedback da IA:", error);
+        setAiFeedback("Excelente esforço! Lembre-se: o ritmo ideal é entre 100-120 BPM.");
+      } finally {
+        setIsLoadingAi(false);
+      }
+    };
+
+    fetchAiFeedback();
+  }, [stats]);
 
   return (
     <div className="relative w-full max-w-2xl flex flex-col items-center">
@@ -56,8 +86,26 @@ const Result: React.FC<ResultProps> = ({ stats, onReset }) => {
           <p className="text-slate-400">
             {isApproved 
               ? 'Parabéns! Suas compressões foram eficazes para manter a perfusão.' 
-              : 'Infelizmente as compressões não foram suficientes para salvar o paciente.'}
+              : 'As compressões não foram suficientes para manter o fluxo sanguíneo.'}
           </p>
+        </div>
+
+        {/* AI Feedback Section */}
+        <div className="mb-8 p-4 bg-slate-900/50 rounded-xl border border-blue-900/30 text-left">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+            <span className="text-xs font-bold text-blue-400 uppercase tracking-tighter">Debriefing da IA</span>
+          </div>
+          {isLoadingAi ? (
+            <div className="space-y-2 animate-pulse">
+              <div className="h-2 bg-slate-700 rounded w-3/4"></div>
+              <div className="h-2 bg-slate-700 rounded w-1/2"></div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-300 italic leading-relaxed">
+              "{aiFeedback}"
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -81,7 +129,7 @@ const Result: React.FC<ResultProps> = ({ stats, onReset }) => {
 
         <button
           onClick={onReset}
-          className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all active:scale-95"
+          className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-red-900/20"
         >
           TENTAR NOVAMENTE
         </button>
