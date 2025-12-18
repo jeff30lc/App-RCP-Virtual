@@ -1,0 +1,5 @@
+{
+  "name": "LifeSaver Pro - Simulador de RCP",
+  "description": "Um simulador interativo de Reanimação Cardiopulmonar (RCP) para treinar o ritmo das compressões e avaliação inicial do paciente.",
+  "requestFramePermissions": []
+}
